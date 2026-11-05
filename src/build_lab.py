@@ -39,6 +39,36 @@ RULE_TITLES = {
     "R05": "Fan-out to new addresses",
     "R06": "Travel Rule information gap",
 }
+# Plain-English explanation of each rule and the first checks an analyst would make, shown in the dashboard.
+RULE_PLAIN = {
+    "R01": "The customer sent crypto to, or received it from, a wallet on the U.S. sanctions list.",
+    "R02": "The other wallet isn't on the sanctions list, but it has sent or received USDT directly with one that is.",
+    "R03": "Money came in and most of it went back out within an hour, so the account may just be a stop along the way.",
+    "R04": "Several withdrawals in one day, each just under $3,000, where sender and recipient details become required.",
+    "R05": "One deposit was split and sent to five or more wallets the customer had never paid before.",
+    "R06": "A withdrawal of $3,000 or more went out without the recipient details the Travel Rule requires.",
+}
+RULE_NEXT = {
+    "R01": ["Freeze or hold per policy and escalate to the sanctions team right away.",
+            "Confirm the address matches the OFAC entry character for character.",
+            "Check whether other customers have touched the same address."],
+    "R02": ["Look at who the other wallet is: a big exchange touching many sanctioned wallets means something different "
+            "from a private wallet dealing with just one.",
+            "Open the on-chain link and check the date and amount against the customer's activity.",
+            "Ask the customer what the transfer was for if the explanation isn't obvious."],
+    "R03": ["Compare against the customer's profile: is fast in-and-out normal for this kind of customer?",
+            "Check where the money went next and whether those wallets show up elsewhere.",
+            "Ask for the source of funds if the deposit is large for this customer."],
+    "R04": ["Line up the withdrawals by time and amount. Do they look split on purpose?",
+            "Check whether the destination wallets belong to the same person.",
+            "Collect Travel Rule details for the whole amount and consider a report if splitting is deliberate."],
+    "R05": ["Check whether the customer has a business reason to pay many wallets, like payroll or payouts.",
+            "See if the new wallets send money back on to a single place.",
+            "Compare the dispersed total to what the customer normally moves."],
+    "R06": ["Request the missing recipient details before processing more withdrawals.",
+            "Check whether this is a one-off or a pattern for the customer.",
+            "Treat it as a process fix unless other alerts point to something more."],
+}
 
 
 def stamp(dt: datetime) -> str:
@@ -227,7 +257,8 @@ def build() -> dict:
     alerts, rules = [], []
     for path in sorted((ROOT / "sql" / "rules").glob("R*.sql")):
         rule_id, sql = path.name[:3], path.read_text()
-        rules.append({"rule_id": rule_id, "title": RULE_TITLES[rule_id], "file": f"sql/rules/{path.name}", "sql": sql})
+        rules.append({"rule_id": rule_id, "title": RULE_TITLES[rule_id], "plain": RULE_PLAIN[rule_id],
+                      "next_steps": RULE_NEXT[rule_id], "file": f"sql/rules/{path.name}", "sql": sql})
         for row in con.execute(sql):
             alert = dict(row)
             alert["evidence"] = json.loads(alert["evidence"])

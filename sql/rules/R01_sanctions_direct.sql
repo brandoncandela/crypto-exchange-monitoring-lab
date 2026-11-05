@@ -6,7 +6,7 @@ SELECT
   t.customer_id,
   t.tx_id AS anchor_tx_id,
   'critical' AS severity,
-  printf('%s of $%,.2f %s a sanctioned address (%s, %s)',
+  printf('%s of $%,.2f %s a sanctioned wallet (%s, %s)',
          CASE t.direction WHEN 'deposit' THEN 'Deposit' ELSE 'Withdrawal' END,
          t.usd_value,
          CASE t.direction WHEN 'deposit' THEN 'from' ELSE 'to' END,

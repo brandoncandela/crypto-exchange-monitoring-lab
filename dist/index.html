@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Crypto Exchange Monitoring Lab | Brandon Candela</title>
+<meta name="description" content="Crypto transaction monitoring for a fictional exchange over real public data: OFAC-listed addresses, real Tron USDT transfers, SQL typology rules and an analyst alert queue.">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="./">Crypto Exchange Monitoring Lab</a>
+    <nav><a href="#queue">Alert queue</a><a href="#rules">Rules &amp; SQL</a><a href="https://github.com/brandoncandela/crypto-exchange-monitoring-lab">Source</a><a href="/">Portfolio</a></nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="intro">
+    <p class="eyebrow">Crypto AML · Transaction monitoring</p>
+    <h1>Which withdrawals should an exchange stop and look at?</h1>
+    <p class="lede">This is a practice version of the system a crypto exchange uses to spot risky activity. The 30 customers and their transfers are made up. The risky wallets are real: every crypto wallet on the U.S. sanctions list, plus real wallets that have traded USDT with them.</p>
+    <ol class="steps reveal">
+      <li><b>Pick an alert</b> from the queue. Six rules flagged these transfers.</li>
+      <li><b>Review the evidence</b> and the customer's activity, then make a call.</li>
+      <li><b>Check the answer key</b> to see what was really going on.</li>
+    </ol>
+    <p class="provenance" id="provenance">Loading data…</p>
+  </section>
+
+  <section class="kpis" id="kpis" aria-label="Summary"></section>
+
+  <section class="reveal">
+    <details class="glossary">
+      <summary>New to crypto compliance? Key terms in plain English</summary>
+      <dl>
+        <dt>OFAC sanctions list</dt><dd>The U.S. Treasury's list of people and companies Americans can't do business with. Some entries include crypto wallet addresses.</dd>
+        <dt>Wallet / address</dt><dd>A crypto account, identified by a long string like <span class="mono">TA39…mz</span>. Anyone can look up its history on a public block explorer.</dd>
+        <dt>USDT on Tron</dt><dd>USDT is a "stablecoin" worth about $1. Tron is a blockchain where a lot of USDT moves because transfers are cheap.</dd>
+        <dt>Direct vs. one-hop exposure</dt><dd>Direct: the customer dealt with a sanctioned wallet. One hop: the customer dealt with a wallet that dealt with a sanctioned wallet. One hop is weaker and needs judgment.</dd>
+        <dt>Travel Rule</dt><dd>For transfers of $3,000 or more, the exchange must collect and pass along who is sending and who is receiving.</dd>
+        <dt>Typology</dt><dd>A known pattern of suspicious behavior, like splitting money into small pieces to avoid a threshold.</dd>
+        <dt>Precision and recall</dt><dd>Precision: of the customers a rule flagged, how many were really doing the risky thing. Recall: of the customers really doing it, how many the rule caught.</dd>
+      </dl>
+    </details>
+  </section>
+
+  <section id="performance" class="reveal">
+    <h2>How well the rules work</h2>
+    <p class="note">Each customer was built to do at most one risky thing, so we can score the rules. Every rule caught all the customers it was meant to catch. The misses on precision come from three customers built to look suspicious but who are fine: an OTC trading desk, a payroll company and a customer paying a busy wallet that looks like a large service. Telling those apart is the part of the job a rule can't do for you.</p>
+    <div class="table-scroll"><table id="metrics"></table></div>
+  </section>
+
+  <section id="queue" class="reveal">
+    <h2>Alert queue</h2>
+    <div class="filters">
+      <label>Severity <select id="f-severity"><option value="">All</option><option>critical</option><option>high</option><option>medium</option><option>low</option></select></label>
+      <label>Rule <select id="f-rule"><option value="">All</option></select></label>
+      <span class="count" id="queue-count" aria-live="polite"></span>
+    </div>
+    <div class="queue-layout">
+      <div class="table-scroll"><table id="alerts"></table></div>
+      <aside class="detail" id="detail" aria-live="polite"><p class="empty">Pick an alert on the left to see why it fired, the evidence and what to check next.</p></aside>
+    </div>
+  </section>
+
+  <section id="rules" class="reveal">
+    <h2>Rules &amp; SQL</h2>
+    <p class="note">Each rule is a short SQL query. The numbers you would tune, like the time window or dollar amount, sit in a <code>params</code> block at the top.</p>
+    <p class="plain" id="rule-plain"></p>
+    <div class="tabs" id="rule-tabs" role="tablist" aria-label="Rules"></div>
+    <pre id="rule-sql" tabindex="0"></pre>
+  </section>
+</main>
+
+<footer class="wrap">
+  <p>Independent work sample by <a href="/">Brandon Candela</a>. The customers, their transfers and transaction IDs are made up. The sanctioned wallets come from the OFAC list, and the one-hop wallets and their transfers are real Tron data. Touching a sanctioned wallet is a reason to look closer, not proof that anyone did something wrong.</p>
+</footer>
+<script src="app.js"></script>
+</body>
+</html>
