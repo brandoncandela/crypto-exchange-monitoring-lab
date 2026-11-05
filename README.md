@@ -1,0 +1,98 @@
+# Crypto Exchange Monitoring Lab
+
+![Crypto Exchange Monitoring Lab](docs/social-preview.jpg)
+
+**[▶ Open the live demo](https://brandoncandela.github.io/crypto-exchange-monitoring-lab/)** · [Portfolio](https://brandoncandela.github.io/) · [LinkedIn](https://www.linkedin.com/in/brandon-candela/) · Built by Brandon Candela, CAMS, PMP
+
+> **What this shows:** how a crypto exchange decides which deposits and withdrawals to stop and review, using real sanctions data, six SQL rules and an analyst queue.
+
+## The idea in one paragraph
+
+Every crypto exchange has to watch money coming in and going out for signs of sanctions exposure and money laundering. This project is a small, working version of that. The exchange and its 30 customers are made up. The risky wallets are real: every crypto address on the U.S. sanctions list (OFAC), plus real wallets that have sent or received USDT with those sanctioned addresses on the Tron blockchain. Six rules flag transfers that need a closer look, and the demo lets you work the alerts the way an analyst would.
+
+## Try it in two minutes
+
+1. Open the [live demo](https://brandoncandela.github.io/crypto-exchange-monitoring-lab/).
+2. Pick an alert from the queue. The panel explains why it fired, shows the evidence and lists what to check next.
+3. Make a call (escalate, ask for information or close it) and write your reasoning.
+4. Click **Show answer key** to see what that customer was really doing. Some alerts are false positives on purpose.
+
+## What the six rules look for
+
+| Rule | In plain English | Why it matters |
+| --- | --- | --- |
+| R01 Direct sanctions exposure | The customer sent crypto to, or got it from, a wallet on the OFAC list. | Dealing with a sanctioned party is prohibited at any amount. |
+| R02 One-hop exposure | The other wallet isn't sanctioned, but it has traded USDT directly with one that is. | Money often reaches a sanctioned party through an in-between wallet. This one needs judgment. |
+| R03 Pass-through | Most of a deposit leaves again within an hour. | Funds that only pass through an account are a common way to hide where money came from. |
+| R04 Structuring | Several withdrawals in a day, each just under $3,000. | $3,000 is where the Travel Rule requires sender and recipient details, so splitting below it can be deliberate. |
+| R05 Fan-out | One deposit split to five or more wallets the customer never paid before. | Spreading money across fresh wallets makes it harder to follow. |
+| R06 Travel Rule gap | A $3,000+ withdrawal with no recipient details. | A process problem the exchange must fix, even when nothing is suspicious. |
+
+Each rule is one short, commented SQL file in [`sql/rules/`](sql/rules). The numbers you would tune (time windows, dollar amounts) sit in a `params` block at the top of each file.
+
+## How well the rules do
+
+Each made-up customer was built to do at most one risky thing, so the rules can be scored.
+
+| Rule | Alerts | Precision | Recall | False positives |
+| --- | ---: | ---: | ---: | --- |
+| R01 Direct sanctions exposure | 2 | 100% | 100% | None |
+| R02 One-hop exposure | 4 | 67% | 100% | A busy wallet that looks like a large service |
+| R03 Pass-through | 12 | 67% | 100% | An OTC trading desk |
+| R04 Structuring | 3 | 67% | 100% | A payroll company |
+| R05 Fan-out | 3 | 67% | 100% | The same payroll company |
+| R06 Travel Rule gap | 2 | 100% | 100% | None |
+
+*Precision:* of the customers a rule flagged, the share really doing the risky thing. *Recall:* of the customers really doing it, the share the rule caught.
+
+The interesting part is the false positives. They are realistic customers whose normal business looks suspicious:
+
+- **The OTC desk** moves client money in and out within minutes every few days. That is how it settles trades, and it produces 10 of the 12 pass-through alerts. A real team would review the desk's expected activity once and tune the rule for that customer type, rather than clear the same alert every week.
+- **The payroll company** pays ten contractors $2,600 to $2,950 twice a month. That looks like structuring and, in the first payroll run, like fan-out. The second run doesn't trigger fan-out because the wallets are no longer new.
+- **The busy wallet** has traded more than 6 million USDT with 19 sanctioned wallets. That pattern is typical of a large service such as an exchange, but the lab doesn't claim to know who controls it. An analyst would have to find out.
+
+## Where the data comes from
+
+| Data | Source | Real or made up |
+| --- | --- | --- |
+| Sanctioned crypto addresses (521) | [OFAC SDN list](https://sanctionssearch.ofac.treas.gov/) | Real |
+| USDT transfers of sanctioned Tron wallets (5,170) | [TronGrid](https://www.trongrid.io/) public API | Real |
+| Prices used to value transfers in dollars | [CoinGecko](https://www.coingecko.com/) | Real, as of the snapshot |
+| Customers, their deposits and withdrawals, transaction IDs | Generated by `src/build_lab.py` | Made up |
+
+The public data was saved on November 5, 2026 in [`data/snapshot/`](data/snapshot), so the lab rebuilds the same way every time, even offline. Run `python3 src/snapshot.py` to refresh it.
+
+A transfer with a sanctioned wallet is a reason to look closer. It is not proof that anyone did something wrong, and nothing here should be read as an accusation against the owner of any real wallet.
+
+## How it's built
+
+- **Python** (standard library only) downloads the public data and builds a fictional exchange ledger on top of it.
+- **SQLite** holds the data. The rules are plain SQL using joins, CTEs, window functions (`ROW_NUMBER`) and JSON output.
+- **Tests** use Python's built-in `unittest`. Each rule is tested right at its edges: 79% vs. 80% withdrawn, 60 vs. 61 minutes, $2,999.99 vs. $3,000. A build test checks that results are identical on every run and that ordinary customers never alert.
+- **The demo** is one HTML page with plain JavaScript and CSS. No framework, no server, no API keys.
+
+```bash
+python3 src/build_lab.py                      # rebuild dist/data/lab.json from the snapshot
+python3 -m unittest discover -s tests -v      # 25 tests
+python3 -m http.server 8000 --directory dist  # then open http://localhost:8000
+```
+
+| Path | What's in it |
+| --- | --- |
+| `src/snapshot.py` | Downloads the OFAC addresses, Tron transfers and prices |
+| `src/build_lab.py` | Builds the fictional exchange, runs the rules, scores them |
+| `sql/schema.sql` | Tables for customers, transfers, sanctioned addresses and on-chain transfers |
+| `sql/rules/` | One SQL file per rule |
+| `tests/` | Rule boundary tests and build checks |
+| `dist/` | The demo page published to GitHub Pages |
+
+## What it doesn't do
+
+- **It only follows one hop.** Real tools trace funds through many wallets. One hop keeps every alert explainable.
+- **It only traces Tron USDT history.** Ethereum addresses on the OFAC list are screened directly, but their transaction history isn't pulled, because that needs a paid or keyed API.
+- **It doesn't attribute wallets.** Commercial tools label wallets as exchanges, mixers or scams. This lab shows the raw links and leaves the judgment to the analyst.
+- **Prices are a single snapshot**, not the price at the time of each transfer.
+
+## License
+
+MIT
