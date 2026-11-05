@@ -1,0 +1,13 @@
+{
+ "retrieved_at": "2026-11-05T23:22:02.677189+00:00",
+ "sources": {
+  "ofac": "https://sanctionslistservice.ofac.treas.gov/api/PublicationPreview/exports/SDN.CSV",
+  "tron": "https://api.trongrid.io",
+  "prices": "https://api.coingecko.com/api/v3/simple/price?ids=tether,ethereum,tron&vs_currencies=usd"
+ },
+ "counts": {
+  "sanctioned_addresses": 521,
+  "tron_addresses_queried": 126,
+  "tron_transfers": 5170
+ }
+}
