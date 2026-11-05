@@ -95,4 +95,4 @@ python3 -m http.server 8000 --directory dist  # then open http://localhost:8000
 
 ## License
 
-MIT
+MIT. Built with AI coding tools.
