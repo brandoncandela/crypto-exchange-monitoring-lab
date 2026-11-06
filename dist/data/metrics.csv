@@ -1,0 +1,25 @@
+dataset,control,rule_id,customer_tp,customer_fp,customer_fn,customers_alerted,seeded_customers,customer_precision,customer_recall,alerts,label_positive_alerts,label_negative_alerts,alert_precision_proxy,alert_recall,alert_recall_denominator,alert_label_basis
+baseline,baseline,R01,2,0,0,2,2,1.0,1.0,2,2,0,1.0,,,Customer–typology label inherited by each alert; not event adjudication.
+baseline,baseline,R02,2,1,0,3,2,0.6666666666666666,1.0,4,3,1,0.75,,,Customer–typology label inherited by each alert; not event adjudication.
+baseline,baseline,R03,2,1,0,3,2,0.6666666666666666,1.0,12,2,10,0.16666666666666666,,,Customer–typology label inherited by each alert; not event adjudication.
+baseline,baseline,R04,2,1,0,3,2,0.6666666666666666,1.0,3,2,1,0.6666666666666666,,,Customer–typology label inherited by each alert; not event adjudication.
+baseline,baseline,R05,2,1,0,3,2,0.6666666666666666,1.0,3,2,1,0.6666666666666666,,,Customer–typology label inherited by each alert; not event adjudication.
+baseline,baseline,R06,2,0,0,2,2,1.0,1.0,2,2,0,1.0,,,Customer–typology label inherited by each alert; not event adjudication.
+baseline,proposed,R01,2,0,0,2,2,1.0,1.0,2,2,0,1.0,,,Customer–typology label inherited by each alert; not event adjudication.
+baseline,proposed,R02,2,1,0,3,2,0.6666666666666666,1.0,4,3,1,0.75,,,Customer–typology label inherited by each alert; not event adjudication.
+baseline,proposed,R03,1,1,1,2,2,0.5,0.5,9,1,8,0.1111111111111111,,,Customer–typology label inherited by each alert; not event adjudication.
+baseline,proposed,R04,2,1,0,3,2,0.6666666666666666,1.0,3,2,1,0.6666666666666666,,,Customer–typology label inherited by each alert; not event adjudication.
+baseline,proposed,R05,2,1,0,3,2,0.6666666666666666,1.0,3,2,1,0.6666666666666666,,,Customer–typology label inherited by each alert; not event adjudication.
+baseline,proposed,R06,2,0,0,2,2,1.0,1.0,2,2,0,1.0,,,Customer–typology label inherited by each alert; not event adjudication.
+evaluation,baseline,R01,2,0,0,2,2,1.0,1.0,2,2,0,1.0,,,Customer–typology label inherited by each alert; not event adjudication.
+evaluation,baseline,R02,1,0,0,1,1,1.0,1.0,1,1,0,1.0,,,Customer–typology label inherited by each alert; not event adjudication.
+evaluation,baseline,R03,3,2,3,5,6,0.6,0.5,5,3,2,0.6,,,Customer–typology label inherited by each alert; not event adjudication.
+evaluation,baseline,R04,1,1,1,2,2,0.5,0.5,2,1,1,0.5,,,Customer–typology label inherited by each alert; not event adjudication.
+evaluation,baseline,R05,1,1,1,2,2,0.5,0.5,2,1,1,0.5,,,Customer–typology label inherited by each alert; not event adjudication.
+evaluation,baseline,R06,3,0,0,3,3,1.0,1.0,3,3,0,1.0,,,Customer–typology label inherited by each alert; not event adjudication.
+evaluation,proposed,R01,2,0,0,2,2,1.0,1.0,2,2,0,1.0,,,Customer–typology label inherited by each alert; not event adjudication.
+evaluation,proposed,R02,1,0,0,1,1,1.0,1.0,1,1,0,1.0,,,Customer–typology label inherited by each alert; not event adjudication.
+evaluation,proposed,R03,1,1,5,2,6,0.5,0.16666666666666666,2,1,1,0.5,,,Customer–typology label inherited by each alert; not event adjudication.
+evaluation,proposed,R04,1,1,1,2,2,0.5,0.5,2,1,1,0.5,,,Customer–typology label inherited by each alert; not event adjudication.
+evaluation,proposed,R05,1,1,1,2,2,0.5,0.5,2,1,1,0.5,,,Customer–typology label inherited by each alert; not event adjudication.
+evaluation,proposed,R06,3,0,0,3,3,1.0,1.0,3,3,0,1.0,,,Customer–typology label inherited by each alert; not event adjudication.

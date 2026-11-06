@@ -20,7 +20,7 @@ class Build(unittest.TestCase):
     def test_every_seeded_customer_is_found_by_its_rule(self):
         for metric in self.lab["metrics"]:
             with self.subTest(rule=metric["rule_id"]):
-                self.assertGreater(metric["seeded_customers"], 0)
+                self.assertGreater(metric["customer_level"]["seeded_customers"], 0)
                 self.assertEqual(metric["missed_customers"], [])
 
     def test_only_lookalikes_produce_false_positives(self):
