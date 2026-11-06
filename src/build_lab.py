@@ -15,6 +15,9 @@ from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
+from metrics import score
+from evaluation import populate as populate_evaluation
+
 ROOT = Path(__file__).resolve().parents[1]
 SNAPSHOT = ROOT / "data" / "snapshot"
 OUT = ROOT / "dist" / "data"
@@ -236,11 +239,18 @@ def populate(ex: Exchange, ofac: list[dict], chain: list[dict]) -> None:
                         when + timedelta(hours=rng.randint(4, 60)), rng.choice(wallets))
 
 
-def build() -> dict:
+def build(dataset: str = "baseline", control: str = "baseline") -> dict:
+    if dataset not in ("baseline", "evaluation") or control not in ("baseline", "proposed"):
+        raise ValueError("Unknown dataset or control")
     snapshot = {name: json.loads((SNAPSHOT / f"{name}.json").read_text())
                 for name in ("manifest", "ofac_crypto_addresses", "tron_usdt_transfers", "prices")}
     ex = Exchange(snapshot["prices"], random.Random(20261105))
-    populate(ex, snapshot["ofac_crypto_addresses"], snapshot["tron_usdt_transfers"])
+    if dataset == "baseline":
+        populate(ex, snapshot["ofac_crypto_addresses"], snapshot["tron_usdt_transfers"])
+        for c in ex.customers:
+            c["seeded_typologies"] = [c["seeded_typology"]] if c["seeded_typology"] else []
+    else:
+        populate_evaluation(ex, snapshot["ofac_crypto_addresses"], snapshot["tron_usdt_transfers"], START)
 
     con = sqlite3.connect(":memory:")
     con.row_factory = sqlite3.Row
@@ -257,6 +267,11 @@ def build() -> dict:
     alerts, rules = [], []
     for path in sorted((ROOT / "sql" / "rules").glob("R*.sql")):
         rule_id, sql = path.name[:3], path.read_text()
+        if rule_id == "R03" and control == "proposed":
+            # Predeclared what-if: change only the minimum deposit, never labels.
+            if sql.count("1000.0 AS min_deposit_usd") != 1:
+                raise ValueError("R03 configuration changed; review the proposed override")
+            sql = sql.replace("1000.0 AS min_deposit_usd", "50000.0 AS min_deposit_usd")
         rules.append({"rule_id": rule_id, "title": RULE_TITLES[rule_id], "plain": RULE_PLAIN[rule_id],
                       "next_steps": RULE_NEXT[rule_id], "file": f"sql/rules/{path.name}", "sql": sql})
         for row in con.execute(sql):
@@ -268,23 +283,11 @@ def build() -> dict:
     for i, alert in enumerate(alerts, 1):
         alert["alert_id"] = f"A-{i:03d}"
 
-    typology = {c["customer_id"]: c["seeded_typology"] for c in ex.customers}
-    metrics = []
-    for rule_id, target in RULE_TARGETS.items():
-        hit = {a["customer_id"] for a in alerts if a["rule_id"] == rule_id}
-        seeded = {cid for cid, t in typology.items() if t == target}
-        true_hits = hit & seeded
-        metrics.append({
-            "rule_id": rule_id, "title": RULE_TITLES[rule_id], "target": target,
-            "alerts": sum(a["rule_id"] == rule_id for a in alerts),
-            "customers_alerted": len(hit), "seeded_customers": len(seeded),
-            "precision": round(len(true_hits) / len(hit), 3) if hit else None,
-            "recall": round(len(true_hits) / len(seeded), 3) if seeded else None,
-            "false_positive_customers": sorted(hit - seeded),
-            "missed_customers": sorted(seeded - hit),
-        })
+    metrics = score(ex.customers, alerts, RULE_TARGETS, RULE_TITLES)
 
     return {
+        "dataset": dataset, "control": control,
+        "label_scope": "Synthetic customer–typology review-worthiness, not illicit activity or event adjudication.",
         "snapshot": snapshot["manifest"],
         "prices": snapshot["prices"],
         "counts": {
@@ -303,14 +306,17 @@ def build() -> dict:
 
 
 def main() -> None:
-    lab = build()
     OUT.mkdir(parents=True, exist_ok=True)
-    (OUT / "lab.json").write_text(json.dumps(lab, separators=(",", ":")) + "\n")
-    print(f"{lab['counts']['customers']} customers, {lab['counts']['transfers']} transfers, "
-          f"{lab['counts']['alerts']} alerts")
-    for m in lab["metrics"]:
-        print(f"  {m['rule_id']} {m['title']}: {m['alerts']} alerts, precision {m['precision']}, recall {m['recall']}"
-              + (f", false positives {m['false_positive_customers']}" if m["false_positive_customers"] else ""))
+    runs = {}
+    for dataset in ("baseline", "evaluation"):
+        for control in ("baseline", "proposed"):
+            lab = build(dataset, control)
+            runs[dataset, control] = lab
+            name = "lab" if (dataset, control) == ("baseline", "baseline") else f"{dataset}-{control}"
+            (OUT / f"{name}.json").write_text(json.dumps(lab, separators=(",", ":")) + "\n")
+            print(f"{dataset}/{control}: {lab['counts']}")
+    from reports import write_reports
+    write_reports(runs)
 
 
 if __name__ == "__main__":

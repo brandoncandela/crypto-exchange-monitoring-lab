@@ -1,5 +1,6 @@
--- Fictional exchange customers. seeded_typology is the answer key used only to
--- measure the rules; it is NULL for customers with no seeded typology.
+-- Fictional exchange customers. seeded_typology preserves the original
+-- single-label baseline field. The multi-label scoring key is exported as
+-- customers[].seeded_typologies in Python/JSON; no rule reads either answer key.
 CREATE TABLE customers (
   customer_id TEXT PRIMARY KEY,
   segment TEXT NOT NULL,              -- retail, high_net_worth, otc_desk, payroll_business, merchant

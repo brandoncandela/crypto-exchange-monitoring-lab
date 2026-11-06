@@ -20,7 +20,7 @@
   <section class="intro">
     <p class="eyebrow">Crypto AML · Transaction monitoring</p>
     <h1>Which withdrawals should an exchange stop and look at?</h1>
-    <p class="lede">This is a practice version of the system a crypto exchange uses to spot risky activity. The 30 customers and their transfers are made up. The risky wallets are real: every crypto wallet on the U.S. sanctions list, plus real wallets that have traded USDT with them.</p>
+    <p class="lede">Review fictional exchange activity with six SQL controls and inspect the evidence behind each alert. Compare original fixtures with a separate challenge set. OFAC addresses and historical Tron links come from a saved public snapshot; no fictional customer is attributed to a real wallet owner.</p>
     <ol class="steps reveal">
       <li><b>Pick an alert</b> from the queue. Six rules flagged these transfers.</li>
       <li><b>Review the evidence</b> and the customer's activity, then make a call.</li>
@@ -41,15 +41,25 @@
         <dt>Direct vs. one-hop exposure</dt><dd>Direct: the customer dealt with a sanctioned wallet. One hop: the customer dealt with a wallet that dealt with a sanctioned wallet. One hop is weaker and needs judgment.</dd>
         <dt>Travel Rule</dt><dd>For transfers of $3,000 or more, the exchange must collect and pass along who is sending and who is receiving.</dd>
         <dt>Typology</dt><dd>A known pattern of suspicious behavior, like splitting money into small pieces to avoid a threshold.</dd>
-        <dt>Precision and recall</dt><dd>Precision: of the customers a rule flagged, how many were really doing the risky thing. Recall: of the customers really doing it, how many the rule caught.</dd>
+        <dt>Precision and recall</dt><dd>Customer precision counts distinct customers correctly flagged for that typology. Customer recall counts the authored positive customers found. Alert precision counts each repeat alert, inheriting the customer's typology label. Alert recall is unavailable without exhaustive event labels. These are synthetic review labels, not findings of crime.</dd>
       </dl>
     </details>
   </section>
 
   <section id="performance" class="reveal">
-    <h2>How well the rules work</h2>
-    <p class="note">Each customer was built to do at most one risky thing, so we can score the rules. Every rule caught all the customers it was meant to catch. The misses on precision come from three customers built to look suspicious but who are fine: an OTC trading desk, a payroll company and a customer paying a busy wallet that looks like a large service. Telling those apart is the part of the job a rule can't do for you.</p>
+    <h2>Test the control, not just the queue size</h2>
+    <p class="note">Original fixtures explain the rules. A separate challenge set adds overlapping labels, intentional misses, benign lookalikes and exact boundaries. Neither set measures production accuracy. The proposed control changes only R03's deposit floor from $1,000 to $50,000; it is a fixed what-if, not a recommended release.</p>
+    <div class="filters">
+      <label>Dataset <select id="dataset"><option value="baseline">Original baseline fixtures</option><option value="evaluation">Separate challenge evaluation</option></select></label>
+      <label>Control <select id="control"><option value="baseline">Baseline: R03 floor $1,000</option><option value="proposed">Proposed: R03 floor $50,000</option></select></label>
+      <button type="button" id="export-metrics">Download this run (JSON)</button>
+      <a href="data/metrics.csv" download>All run metrics (CSV)</a>
+    </div>
+    <p id="load-status" role="status" aria-live="polite"></p>
+    <p class="note" id="run-context"></p>
+    <p class="note">Each fraction shows numerator / denominator. Customer counts deduplicate within each rule; alerts count repeats. Alert precision is a proxy based on customer labels, not independently adjudicated events. Alert recall is N/A: no exhaustive event denominator exists. Zero denominators are also N/A. Cross-rule customer counts overlap.</p>
     <div class="table-scroll"><table id="metrics"></table></div>
+    <p class="note"><a href="https://github.com/brandoncandela/crypto-exchange-monitoring-lab/blob/main/docs/control-tuning.md">Read the control-tuning case study</a> · <a href="https://github.com/brandoncandela/crypto-exchange-monitoring-lab/blob/main/docs/walkthrough.md">90-second walkthrough script</a></p>
   </section>
 
   <section id="queue" class="reveal">

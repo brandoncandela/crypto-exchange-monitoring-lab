@@ -2,13 +2,15 @@
 const $ = (s) => document.querySelector(s);
 const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const usd = (n) => n.toLocaleString("en-US", { style: "currency", currency: "USD" });
-const pct = (n) => (n === null ? "–" : `${Math.round(n * 100)}%`);
+const pct = (n) => (n === null ? "N/A" : `${(n * 100).toFixed(1)}%`);
 const isTron = (a) => /^T[1-9A-HJ-NP-Za-km-z]{33}$/.test(a);
 
 const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
 let lab;
 let selected = null;
-const decisions = {}; // alert_id -> { outcome, rationale }; kept in memory only
+let decisions = {}; // separate in-memory decisions per dataset/control
+const runDecisions = {};
+let loadNumber = 0;
 
 // Real addresses link to a block explorer; synthetic ones are labeled instead.
 function addressLink(address, source) {
@@ -20,7 +22,7 @@ function addressLink(address, source) {
 function renderHeader() {
   const s = lab.snapshot;
   $("#provenance").textContent = `Public data snapshot ${s.retrieved_at.slice(0, 10)}: ${s.counts.sanctioned_addresses} OFAC-listed crypto addresses, `
-    + `${s.counts.tron_transfers.toLocaleString()} real USDT transfers of ${s.counts.tron_addresses_queried} sanctioned Tron wallets, `
+    + `${lab.counts.sanctioned_addresses} distinct addresses; ${s.counts.tron_transfers.toLocaleString()} real USDT transfers of ${s.counts.tron_addresses_queried} sanctioned Tron wallets, `
     + `CoinGecko prices (USDT ${usd(lab.prices.tether.usd)}, ETH ${usd(lab.prices.ethereum.usd)}).`;
   const realCounterparties = new Set(lab.transfers.filter((t) => t.counterparty_source !== "synthetic").map((t) => t.counterparty_address));
   const kpis = [
@@ -46,14 +48,20 @@ function countUp(el) {
 }
 
 function renderMetrics() {
-  $("#metrics").innerHTML = `<thead><tr><th>Rule</th><th class="num">Alerts</th><th class="num">Precision</th><th class="num">Recall</th><th>False positives</th></tr></thead><tbody>`
-    + lab.metrics.map((m) => `<tr><td><b>${m.rule_id}</b> ${esc(m.title)}</td><td class="num">${m.alerts}</td>`
-      + `<td class="num">${bar(m.precision)}${pct(m.precision)}</td><td class="num">${bar(m.recall)}${pct(m.recall)}</td>`
-      + `<td>${m.false_positive_customers.map((c) => `${c} <span class="tag">${esc(customer(c).segment.replace("_", " "))}</span>`).join(", ") || "None"}</td></tr>`).join("")
+  $("#run-context").textContent = `${lab.dataset === "baseline" ? "Original baseline fixtures" : "Separate challenge evaluation"} · ${lab.control} control · ${lab.counts.customers} fictional customers. Labels may overlap in the challenge set. Decisions stay in memory for this run only.`;
+  const fraction = (n, d, value) => `${n}/${d} (${pct(value)})`;
+  $("#metrics").innerHTML = `<caption>${esc(lab.dataset)} fixtures / ${esc(lab.control)} control. Synthetic customer–typology labels.</caption><thead><tr><th scope="col">Rule</th><th scope="col">Alerts</th><th scope="col">Customer precision</th><th scope="col">Customer recall</th><th scope="col">Alert precision proxy</th><th scope="col">Alert recall</th><th scope="col">False positive customers</th><th scope="col">Missed customers</th></tr></thead><tbody>`
+    + lab.metrics.map((m) => {
+      const c = m.customer_level, a = m.alert_level;
+      return `<tr><th scope="row">${m.rule_id} ${esc(m.title)}</th><td data-label="Alerts" class="num">${a.alerts}</td>`
+        + `<td data-label="Customer precision" class="num">${fraction(c.true_positives, c.customers_alerted, c.precision)}</td>`
+        + `<td data-label="Customer recall" class="num">${fraction(c.true_positives, c.seeded_customers, c.recall)}</td>`
+        + `<td data-label="Alert precision proxy" class="num">${fraction(a.label_positive_alerts, a.alerts, a.precision)}</td><td data-label="Alert recall">N/A</td>`
+        + `<td data-label="False positive customers">${m.false_positive_customers.join(", ") || "None"}</td><td data-label="Missed customers">${m.missed_customers.join(", ") || "None"}</td></tr>`;
+    }).join("")
     + "</tbody>";
 }
 
-const bar = (n) => `<span class="bar" aria-hidden="true"><i data-width="${Math.round((n ?? 0) * 100)}%"></i></span>`;
 const customer = (id) => lab.customers.find((c) => c.customer_id === id);
 const ruleTitle = (id) => lab.rules.find((r) => r.rule_id === id).title;
 
@@ -132,14 +140,22 @@ function caseSummary(alert) {
   const c = customer(alert.customer_id);
   const d = decisions[alert.alert_id] || {};
   const evidence = evidenceRows(alert).map(([k, v]) => `- ${k}: ${v.replace(/<[^>]+>/g, "")}`).join("\n");
-  return `# Case summary: ${alert.alert_id}\n\n**Rule:** ${alert.rule_id} ${ruleTitle(alert.rule_id)}\n**Severity:** ${alert.severity}\n`
+  const m = lab.metrics.find((m) => m.rule_id === alert.rule_id);
+  const cm = m.customer_level, am = m.alert_level;
+  return `# Case summary: ${alert.alert_id}\n\n**Dataset:** ${lab.dataset}\n**Control:** ${lab.control}\n**Rule:** ${alert.rule_id} ${ruleTitle(alert.rule_id)}\n**Severity:** ${alert.severity}\n`
     + `**Customer:** ${c.customer_id} (${c.segment}, KYC risk ${c.kyc_risk}, expected ${usd(c.expected_monthly_usd)}/month)\n\n`
     + `## Alert\n${alert.summary}\n\n## Evidence\n${evidence}\n\n## Decision\n${d.outcome || "Not decided"}\n\n`
-    + `## Rationale\n${d.rationale || "(none recorded)"}\n\n---\nFictional customer and ledger; addresses and on-chain links are public data. A lead for review, not a finding of wrongdoing.\n`;
+    + `## Rationale\n${d.rationale || "(none recorded)"}\n\n## Synthetic run metrics for ${alert.rule_id}\n`
+    + `Customer precision: ${cm.true_positives}/${cm.customers_alerted} (${pct(cm.precision)}). Customer recall: ${cm.true_positives}/${cm.seeded_customers} (${pct(cm.recall)}).\n`
+    + `Alert precision proxy: ${am.label_positive_alerts}/${am.alerts} (${pct(am.precision)}). Alert recall: N/A. ${am.recall_unavailable_reason}\n`
+    + `${am.label_basis} Cross-rule customer counts overlap.\n\n## Raw alert evidence\n\`\`\`json\n${JSON.stringify(alert, null, 2)}\n\`\`\`\n\n`
+    + `---\nFictional customer, ledger and TX IDs; public addresses and historical blockchain links are separate evidence, not attribution to a real customer. A lead for review, not a finding of wrongdoing.\n`;
 }
 
 function renderRules() {
-  $("#f-rule").innerHTML += lab.rules.map((r) => `<option value="${r.rule_id}">${r.rule_id} ${esc(r.title)}</option>`).join("");
+  const current = $("#f-rule").value;
+  $("#f-rule").innerHTML = '<option value="">All</option>' + lab.rules.map((r) => `<option value="${r.rule_id}">${r.rule_id} ${esc(r.title)}</option>`).join("");
+  $("#f-rule").value = current;
   const show = (id) => {
     document.querySelectorAll("#rule-tabs button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.rule === id)));
     const rule = lab.rules.find((r) => r.rule_id === id);
@@ -147,7 +163,7 @@ function renderRules() {
     $("#rule-sql").textContent = rule.sql;
   };
   $("#rule-tabs").innerHTML = lab.rules.map((r) => `<button type="button" data-rule="${r.rule_id}">${r.rule_id} ${esc(r.title)}</button>`).join("");
-  $("#rule-tabs").addEventListener("click", (e) => e.target.dataset.rule && show(e.target.dataset.rule));
+  $("#rule-tabs").onclick = (e) => e.target.dataset.rule && show(e.target.dataset.rule);
   show(lab.rules[0].rule_id);
 }
 
@@ -169,14 +185,16 @@ document.addEventListener("click", (e) => {
     const alert = lab.alerts.find((a) => a.alert_id === selected);
     const link = Object.assign(document.createElement("a"), {
       href: URL.createObjectURL(new Blob([caseSummary(alert)], { type: "text/markdown" })),
-      download: `${alert.alert_id}-case-summary.md`,
+      download: `${lab.dataset}-${lab.control}-${alert.alert_id}-case-summary.md`,
     });
     link.click();
     URL.revokeObjectURL(link.href);
   }
   if (e.target.id === "reveal") {
-    const c = customer(lab.alerts.find((a) => a.alert_id === selected).customer_id);
-    $("#answer").innerHTML = `<div class="answer"><b>${c.seeded_typology ? `Risky behavior built in: ${esc(c.seeded_typology.replace(/_/g, " "))}` : "Nothing risky built in: this is a false positive"}</b><br>${esc(c.scenario)}</div>`;
+    const alert = lab.alerts.find((a) => a.alert_id === selected);
+    const c = customer(alert.customer_id);
+    const target = lab.metrics.find((m) => m.rule_id === alert.rule_id).target;
+    $("#answer").innerHTML = `<div class="answer"><b>${c.seeded_typologies.includes(target) ? "Authored positive for this rule" : "Authored negative for this rule"}</b><br>${esc(c.scenario)}<br>All customer labels: ${esc(c.seeded_typologies.join(", ") || "None")}. Synthetic review priorities, not findings of crime.</div>`;
   }
 });
 document.addEventListener("input", (e) => {
@@ -205,14 +223,40 @@ function observeReveals() {
 $("#f-severity").addEventListener("change", renderQueue);
 $("#f-rule").addEventListener("change", renderQueue);
 
-fetch("data/lab.json")
-  .then((r) => r.json())
-  .then((data) => {
+async function loadRun() {
+  const request = ++loadNumber;
+  const dataset = $("#dataset").value, control = $("#control").value;
+  const file = dataset === "baseline" && control === "baseline" ? "lab" : `${dataset}-${control}`;
+  $("#load-status").textContent = "Loading the selected run…";
+  try {
+    const response = await fetch(`data/${file}.json`);
+    if (!response.ok) throw new Error("Run unavailable");
+    const data = await response.json();
+    if (request !== loadNumber) return;
     lab = data;
+    decisions = runDecisions[`${dataset}/${control}`] ||= {};
+    selected = null;
+    $("#detail").innerHTML = '<p class="empty">Select an alert to review this run.</p>';
     renderHeader();
     renderMetrics();
     renderRules();
     renderQueue();
     observeReveals();
-  })
-  .catch(() => { $("#provenance").textContent = "Could not load data/lab.json. Run python3 src/build_lab.py, then serve dist/."; });
+    $("#load-status").textContent = "";
+  } catch {
+    if (request !== loadNumber) return;
+    $("#load-status").textContent = "Could not load the selected run. Reload to retry. For a local checkout, rebuild with python3 src/build_lab.py and serve dist/.";
+    if (lab) { $("#dataset").value = lab.dataset; $("#control").value = lab.control; }
+  }
+}
+$("#dataset").addEventListener("change", loadRun);
+$("#control").addEventListener("change", loadRun);
+$("#export-metrics").addEventListener("click", () => {
+  if (!lab) return;
+  const link = Object.assign(document.createElement("a"), {
+    href: URL.createObjectURL(new Blob([JSON.stringify(lab, null, 2)], { type: "application/json" })),
+    download: `${lab.dataset}-${lab.control}-run.json`,
+  });
+  link.click(); URL.revokeObjectURL(link.href);
+});
+loadRun();

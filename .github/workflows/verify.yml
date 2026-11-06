@@ -1,0 +1,27 @@
+name: Rebuild and test
+on:
+  push:
+    branches: [main, 'review/**']
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Reproduce committed outputs from the offline snapshot
+        run: python3 scripts/check_outputs.py
+      - name: Test rules, labels, metrics and regressions
+        run: python3 -m unittest discover -s tests -v
+      - name: Check browser script syntax
+        run: node --check dist/app.js
+      - name: Confirm generated outputs match Git
+        run: git diff --exit-code -- README.md docs/control-tuning.md docs/walkthrough.md dist/data/
