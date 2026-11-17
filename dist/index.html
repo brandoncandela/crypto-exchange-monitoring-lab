@@ -7,6 +7,7 @@
 <meta name="description" content="Crypto transaction monitoring for a fictional exchange over real public data: OFAC-listed addresses, real Tron USDT transfers, SQL typology rules and an analyst alert queue.">
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="apple.css">
 </head>
 <body>
 <header class="top">
@@ -18,9 +19,14 @@
 
 <main class="wrap">
   <section class="intro">
+   <div class="ap-hero">
+    <div>
     <p class="eyebrow">Crypto AML · Transaction monitoring</p>
-    <h1>Which withdrawals should an exchange stop and look at?</h1>
+    <h1 class="ap-gradient">Which withdrawals should an exchange stop and look at?</h1>
     <p class="lede">This is a practice version of the system a crypto exchange uses to spot risky activity. The 30 customers and their transfers are made up. The risky wallets are real: every crypto wallet on the U.S. sanctions list, plus real wallets that have traded USDT with them.</p>
+    </div>
+    <img class="ap-art" src="hero-art.svg" width="560" height="440" alt="Illustration: a customer wallet network with one wallet linked to the OFAC sanctions list">
+   </div>
     <ol class="steps reveal">
       <li><b>Pick an alert</b> from the queue. Six rules flagged these transfers.</li>
       <li><b>Review the evidence</b> and the customer's activity, then make a call.</li>
@@ -78,5 +84,6 @@
   <p>Independent work sample by <a href="/">Brandon Candela</a>. The customers, their transfers and transaction IDs are made up. The sanctioned wallets come from the OFAC list, and the one-hop wallets and their transfers are real Tron data. Touching a sanctioned wallet is a reason to look closer, not proof that anyone did something wrong.</p>
 </footer>
 <script src="app.js"></script>
+<script src="apple.js" data-lift=".kpi, .steps li"></script>
 </body>
 </html>

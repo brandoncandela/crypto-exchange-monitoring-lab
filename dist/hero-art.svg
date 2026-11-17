@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 440" role="img" aria-label="Exchange wallet network with a sanctioned wallet one hop away">
+<defs>
+  <linearGradient id="panel" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#eef4ff"/></linearGradient>
+  <linearGradient id="blue" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5aa9ff"/><stop offset="1" stop-color="#0066cc"/></linearGradient>
+  <linearGradient id="indigo" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8b93ff"/><stop offset="1" stop-color="#4338ca"/></linearGradient>
+  <radialGradient id="glowA" cx=".2" cy=".15" r=".6"><stop offset="0" stop-color="#5aa9ff" stop-opacity=".45"/><stop offset="1" stop-color="#5aa9ff" stop-opacity="0"/></radialGradient>
+  <radialGradient id="glowB" cx=".9" cy=".9" r=".6"><stop offset="0" stop-color="#8b93ff" stop-opacity=".4"/><stop offset="1" stop-color="#8b93ff" stop-opacity="0"/></radialGradient>
+  <filter id="soft" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#1e3a8a" flood-opacity=".10"/></filter>
+</defs>
+<style>
+  .pulse { animation: pulse 2.4s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+  .flow { stroke-dasharray: 6 10; animation: flow 1.6s linear infinite; }
+  @keyframes pulse { 50% { transform: scale(1.18); opacity: .75; } }
+  @keyframes draw { to { stroke-dashoffset: 0; } }
+  @keyframes grow { from { transform: scaleY(0); } }
+  @keyframes fade { from { opacity: 0; } }
+  @keyframes flow { to { stroke-dashoffset: -32; } }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; stroke-dashoffset: 0 !important; } }
+</style>
+<rect width="560" height="440" rx="28" fill="url(#panel)"/>
+<rect width="560" height="440" rx="28" fill="url(#glowA)"/>
+<rect width="560" height="440" rx="28" fill="url(#glowB)"/>
+<rect x=".5" y=".5" width="559" height="439" rx="27.5" fill="none" stroke="#ffffff" stroke-opacity=".9"/>
+<line x1="280" y1="225" x2="410.1" y2="214.3" stroke="#5aa9ff" stroke-opacity=".55" stroke-width="2" class=""/>
+<line x1="280" y1="225" x2="395.8" y2="276.6" stroke="#5aa9ff" stroke-opacity=".55" stroke-width="2" class=""/>
+<line x1="280" y1="225" x2="320.9" y2="305.3" stroke="#5aa9ff" stroke-opacity=".55" stroke-width="2" class=""/>
+<line x1="280" y1="225" x2="287.4" y2="336.5" stroke="#5aa9ff" stroke-opacity=".55" stroke-width="2" class=""/>
+<line x1="280" y1="225" x2="211.7" y2="299.9" stroke="#c4302b" stroke-opacity=".55" stroke-width="2" class="flow"/>
+<line x1="280" y1="225" x2="152.7" y2="233.7" stroke="#5aa9ff" stroke-opacity=".55" stroke-width="2" class=""/>
+<line x1="280" y1="225" x2="163.1" y2="184.3" stroke="#5aa9ff" stroke-opacity=".55" stroke-width="2" class=""/>
+<line x1="280" y1="225" x2="210.1" y2="154.5" stroke="#5aa9ff" stroke-opacity=".55" stroke-width="2" class="flow"/>
+<line x1="280" y1="225" x2="267.2" y2="112.8" stroke="#5aa9ff" stroke-opacity=".55" stroke-width="2" class=""/>
+<line x1="280" y1="225" x2="339.0" y2="126.7" stroke="#5aa9ff" stroke-opacity=".55" stroke-width="2" class=""/>
+<line x1="280" y1="225" x2="377.0" y2="183.4" stroke="#5aa9ff" stroke-opacity=".55" stroke-width="2" class=""/>
+<line x1="410.1" y1="214.3" x2="320.9" y2="305.3" stroke="#8b93ff" stroke-opacity=".35" stroke-width="1.5"/>
+<line x1="211.7" y1="299.9" x2="163.1" y2="184.3" stroke="#8b93ff" stroke-opacity=".35" stroke-width="1.5"/>
+<line x1="267.2" y1="112.8" x2="377.0" y2="183.4" stroke="#8b93ff" stroke-opacity=".35" stroke-width="1.5"/>
+<circle cx="410.1" cy="214.3" r="9" fill="#0066cc" stroke="#fff" stroke-width="3" class="fade" style="animation-delay:0ms"/>
+<circle cx="395.8" cy="276.6" r="8" fill="#0066cc" stroke="#fff" stroke-width="3" class="fade" style="animation-delay:80ms"/>
+<circle cx="320.9" cy="305.3" r="8" fill="#38a6f4" stroke="#fff" stroke-width="3" class="fade" style="animation-delay:160ms"/>
+<circle cx="287.4" cy="336.5" r="9" fill="#8b93ff" stroke="#fff" stroke-width="3" class="fade" style="animation-delay:240ms"/>
+<circle cx="211.7" cy="299.9" r="20" fill="#c4302b" fill-opacity=".14" class="pulse"/>
+<circle cx="211.7" cy="299.9" r="10" fill="#c4302b" stroke="#fff" stroke-width="3"/>
+<circle cx="152.7" cy="233.7" r="8" fill="#8b93ff" stroke="#fff" stroke-width="3" class="fade" style="animation-delay:400ms"/>
+<circle cx="163.1" cy="184.3" r="8" fill="#38a6f4" stroke="#fff" stroke-width="3" class="fade" style="animation-delay:480ms"/>
+<circle cx="210.1" cy="154.5" r="9" fill="#5aa9ff" stroke="#fff" stroke-width="3" class="fade" style="animation-delay:560ms"/>
+<circle cx="267.2" cy="112.8" r="8" fill="#2563eb" stroke="#fff" stroke-width="3" class="fade" style="animation-delay:640ms"/>
+<circle cx="339.0" cy="126.7" r="8" fill="#0066cc" stroke="#fff" stroke-width="3" class="fade" style="animation-delay:720ms"/>
+<circle cx="377.0" cy="183.4" r="7" fill="#2563eb" stroke="#fff" stroke-width="3" class="fade" style="animation-delay:800ms"/>
+<circle cx="280" cy="225" r="34" fill="#0066cc" fill-opacity=".12" class="pulse"/>
+<circle cx="280" cy="225" r="20" fill="url(#blue)" stroke="#fff" stroke-width="4"/>
+<text x="280" y="229" font-family="Inter, -apple-system, Segoe UI, sans-serif" font-size="10" font-weight="800" fill="#fff" text-anchor="middle">YOU</text><rect x="28" y="26" width="214" height="64" rx="16" fill="#fff" fill-opacity=".86" stroke="#1d1d1f" stroke-opacity=".06" filter="url(#soft)" /><text x="46" y="52" font-family="Inter, -apple-system, Segoe UI, sans-serif" font-size="14" font-weight="700" fill="#1d1d1f" text-anchor="start">Withdrawal flagged</text><text x="46" y="72" font-family="Inter, -apple-system, Segoe UI, sans-serif" font-size="11" font-weight="500" fill="#55555d" text-anchor="start">1 hop from an OFAC listed wallet</text><rect x="171.74664762184636" y="317.92951919392317" width="62" height="22" rx="11" fill="#c4302b"/><text x="202.64664762184637" y="332.92951919392317" font-family="Inter, -apple-system, Segoe UI, sans-serif" font-size="11" font-weight="700" fill="#fff" text-anchor="middle">OFAC SDN</text><rect x="360" y="352" width="172" height="60" rx="16" fill="#fff" fill-opacity=".86" stroke="#1d1d1f" stroke-opacity=".06" filter="url(#soft)" /><text x="378" y="376" font-family="Inter, -apple-system, Segoe UI, sans-serif" font-size="15" font-weight="800" fill="#0066cc" text-anchor="start">USDT withdrawal</text><text x="378" y="396" font-family="Inter, -apple-system, Segoe UI, sans-serif" font-size="11" font-weight="500" fill="#55555d" text-anchor="start">Tron · held for review</text>
+</svg>
