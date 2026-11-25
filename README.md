@@ -2,7 +2,7 @@
 
 ![Crypto Exchange Monitoring Lab](docs/social-preview.jpg)
 
-**[▶ Open the live demo](https://brandoncandela.github.io/crypto-exchange-monitoring-lab/)** · [Portfolio](https://brandoncandela.github.io/) · [LinkedIn](https://www.linkedin.com/in/brandon-candela/) · Built by Brandon Candela, CAMS, PMP
+**[▶ Open the live demo](https://brandoncandela.github.io/crypto-exchange-monitoring-lab/)** · [Technical case study](https://brandoncandela.github.io/case-studies/crypto-exchange-monitoring-lab.html) · [Portfolio](https://brandoncandela.github.io/) · [LinkedIn](https://www.linkedin.com/in/brandon-candela/) · Built by Brandon Candela, CAMS, PMP
 
 > **What this shows:** how a crypto exchange decides which deposits and withdrawals to stop and review, using real sanctions data, six SQL rules and an analyst queue.
 
