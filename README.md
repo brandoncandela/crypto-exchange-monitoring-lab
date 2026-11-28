@@ -1,5 +1,7 @@
 # Crypto Exchange Monitoring Lab
 
+[![CI](https://github.com/brandoncandela/crypto-exchange-monitoring-lab/actions/workflows/ci.yml/badge.svg)](https://github.com/brandoncandela/crypto-exchange-monitoring-lab/actions/workflows/ci.yml)
+
 ![Crypto Exchange Monitoring Lab](docs/social-preview.jpg)
 
 **[▶ Open the live demo](https://brandoncandela.github.io/crypto-exchange-monitoring-lab/)** · [Technical case study](https://brandoncandela.github.io/case-studies/crypto-exchange-monitoring-lab.html) · [Portfolio](https://brandoncandela.github.io/) · [LinkedIn](https://www.linkedin.com/in/brandon-candela/) · Built by Brandon Candela, CAMS, PMP
